@@ -46,6 +46,6 @@ mkdir -p $INSTALL_DIR/etc
 mv PcapPlusPlus.mk $INSTALL_DIR/etc
 
 # copy PcapPlusPlus.pc
-PKG_CONFIG_PATH="${PKG_CONFIG_PATH:-$INSTALL_DIR/lib/pkgconfig}"
+PKG_CONFIG_PATH="${INSTALL_DIR}/lib/pkgconfig"
 mkdir -p $PKG_CONFIG_PATH
 mv PcapPlusPlus.pc $PKG_CONFIG_PATH
