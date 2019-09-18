@@ -22,6 +22,7 @@ static std::map<uint16_t, bool> createDNSPortMap()
 	result[53] = true;
 	result[5353] = true;
 	result[5355] = true;
+	result[53000] = true;
 	return result;
 }
 
