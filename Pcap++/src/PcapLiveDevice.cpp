@@ -515,6 +515,11 @@ void PcapLiveDevice::stopCapture()
 	m_StopThread = false;
 }
 
+bool PcapLiveDevice::captureActive()
+{
+	return m_CaptureThreadStarted;
+}
+
 void PcapLiveDevice::getStatistics(pcap_stat& stats)
 {
 	if(pcap_stats(m_PcapDescriptor, &stats) < 0)
@@ -666,7 +671,7 @@ void PcapLiveDevice::setDeviceMtu()
 	struct ifreq ifr;
 
 	memset(&ifr, 0, sizeof(ifr));
-	strncpy(ifr.ifr_name, m_Name, sizeof(ifr.ifr_name));
+	strncpy(ifr.ifr_name, m_Name, sizeof(ifr.ifr_name) - 1);
 
 	int socketfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if (ioctl(socketfd, SIOCGIFMTU, &ifr) == -1)
@@ -722,7 +727,7 @@ void PcapLiveDevice::setDeviceMacAddress()
 	struct ifreq ifr;
 
 	memset(&ifr, 0, sizeof(ifr));
-	strncpy(ifr.ifr_name, m_Name, sizeof(ifr.ifr_name));
+	strncpy(ifr.ifr_name, m_Name, sizeof(ifr.ifr_name) - 1);
 
 	int socketfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if (ioctl(socketfd, SIOCGIFHWADDR, &ifr) == -1)
