@@ -468,6 +468,7 @@ namespace pcpp
 		case 53:
 		case 5353:
 		case 5355:
+		case 53000:
 			return true;
 		default:
 			return false;
