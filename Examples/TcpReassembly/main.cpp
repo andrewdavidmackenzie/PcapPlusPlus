@@ -71,7 +71,7 @@ static struct option TcpAssemblyOptions[] =
 	{"max-file-desc", required_argument, 0, 'f'},
 	{"help", no_argument, 0, 'h'},
 	{"version", no_argument, 0, 'v'},
-    {0, 0, 0, 0}
+	{0, 0, 0, 0}
 };
 
 
@@ -194,10 +194,18 @@ public:
 	/**
 	 * The singleton implementation of this class
 	 */
-	static inline GlobalConfig& getInstance()
+	static GlobalConfig& getInstance()
 	{
 		static GlobalConfig instance;
 		return instance;
+	}
+	
+	/**
+	 * d'tor
+	 */
+	~GlobalConfig()
+	{
+		delete m_RecentConnsWithActivity;
 	}
 };
 
@@ -330,7 +338,7 @@ void listInterfaces()
 /**
  * The callback being called by the TCP reassembly module whenever new data arrives on a certain connection
  */
-static void tcpReassemblyMsgReadyCallback(int sideIndex, TcpStreamData tcpData, void* userCookie)
+static void tcpReassemblyMsgReadyCallback(int sideIndex, const TcpStreamData& tcpData, void* userCookie)
 {
 	// extract the connection manager from the user cookie
 	TcpReassemblyConnMgr* connMgr = (TcpReassemblyConnMgr*)userCookie;
@@ -357,13 +365,14 @@ static void tcpReassemblyMsgReadyCallback(int sideIndex, TcpStreamData tcpData, 
 		// add the flow key of this connection to the list of open connections. If the return value isn't NULL it means that there are too many open files
 		// and we need to close the connection with least recently used file(s) in order to open a new one.
 		// The connection with the least recently used file is the return value
-		uint32_t* flowKeyToCloseFiles = GlobalConfig::getInstance().getRecentConnsWithActivity()->put(tcpData.getConnectionData().flowKey);
+		uint32_t flowKeyToCloseFiles;
+		int result = GlobalConfig::getInstance().getRecentConnsWithActivity()->put(tcpData.getConnectionData().flowKey, &flowKeyToCloseFiles);
 
-		// if flowKeyToCloseFiles isn't NULL it means we need to close the open files in this connection (the one with the least recently used files)
-		if (flowKeyToCloseFiles != NULL)
+		// if result equals to 1 it means we need to close the open files in this connection (the one with the least recently used files)
+		if (result == 1)
 		{
 			// find the connection from the flow key
-			TcpReassemblyConnMgrIter iter2 = connMgr->find(*flowKeyToCloseFiles);
+			TcpReassemblyConnMgrIter iter2 = connMgr->find(flowKeyToCloseFiles);
 			if (iter2 != connMgr->end())
 			{
 				// close files on both sides (if they're open)
@@ -380,8 +389,6 @@ static void tcpReassemblyMsgReadyCallback(int sideIndex, TcpStreamData tcpData, 
 					}
 				}
 			}
-
-			delete flowKeyToCloseFiles;
 		}
 
 		// get the file name according to the 5-tuple etc.
@@ -413,7 +420,7 @@ static void tcpReassemblyMsgReadyCallback(int sideIndex, TcpStreamData tcpData, 
 /**
  * The callback being called by the TCP reassembly module whenever a new connection is found. This method adds the connection to the connection manager
  */
-static void tcpReassemblyConnectionStartCallback(ConnectionData connectionData, void* userCookie)
+static void tcpReassemblyConnectionStartCallback(const ConnectionData& connectionData, void* userCookie)
 {
 	// get a pointer to the connection manager
 	TcpReassemblyConnMgr* connMgr = (TcpReassemblyConnMgr*)userCookie;
@@ -434,7 +441,7 @@ static void tcpReassemblyConnectionStartCallback(ConnectionData connectionData, 
  * The callback being called by the TCP reassembly module whenever a connection is ending. This method removes the connection from the connection manager and writes the metadata file if requested
  * by the user
  */
-static void tcpReassemblyConnectionEndCallback(ConnectionData connectionData, TcpReassembly::ConnectionEndReason reason, void* userCookie)
+static void tcpReassemblyConnectionEndCallback(const ConnectionData& connectionData, TcpReassembly::ConnectionEndReason reason, void* userCookie)
 {
 	// get a pointer to the connection manager
 	TcpReassemblyConnMgr* connMgr = (TcpReassemblyConnMgr*)userCookie;

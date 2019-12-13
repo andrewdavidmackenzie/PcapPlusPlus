@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/seladb/PcapPlusPlus.svg?branch=master)](https://travis-ci.org/seladb/PcapPlusPlus)
 [![Build status](https://ci.appveyor.com/api/projects/status/4u5ui21ibbevkstc?svg=true)](https://ci.appveyor.com/project/seladb/pcapplusplus/branch/master)
+[![Build Status](https://api.cirrus-ci.com/github/seladb/PcapPlusPlus.svg)](https://cirrus-ci.com/github/seladb/PcapPlusPlus)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/18137/badge.svg)](https://scan.coverity.com/projects/pcapplusplus)
 <a href="https://twitter.com/intent/follow?screen_name=seladb">
     <img src="https://img.shields.io/twitter/follow/seladb.svg?label=Follow%20PcapPlusPlus" alt="Follow PcapPlusPlus" />
@@ -41,7 +42,7 @@ From [Conan](https://bintray.com/bincrafters/public-conan/pcapplusplus%3Abincraf
 
 ```shell
 conan remote add public-conan https://api.bintray.com/conan/bincrafters/public-conan
-conan install pcapplusplus/19.04@bincrafters/stable -r public-conan
+conan install pcapplusplus/19.12@bincrafters/stable -r public-conan
 ```
 
 From GitHub release page:
@@ -64,7 +65,7 @@ Follow the build instructions according to your platform in the [Build From Sour
 - __Packet parsing and crafting__ including detailed analysis of protocols and layers, packet generation and packet edit for a large variety of [network protocols](https://pcapplusplus.github.io/docs/features#supported-network-protocols) [[Learn more](https://pcapplusplus.github.io/docs/features#packet-parsing-and-crafting)]
 - __Read and write packets from/to files__ in both __PCAP__ and __PCAPNG__ formats [[Learn more](https://pcapplusplus.github.io/docs/features#read-and-write-packets-fromto-files)]
 - __Packet processing in line rate__ through an efficient and easy to use C++ wrapper for [DPDK](https://www.dpdk.org/) and [PF_RING](https://www.ntop.org/products/packet-capture/pf_ring/) [[Learn more](https://pcapplusplus.github.io/docs/features#dpdk-support)]
-- __Multiplatform support__ - PcapPlusPlus is fully supported on Linux, MacOS and Windows
+- __Multiplatform support__ - PcapPlusPlus is fully supported on Linux, MacOS, Windows and FreeBSD
 - __Packet reassembly__ - unique implementation of __TCP Reassembly__ which includes TCP retransmission, out-of-order TCP packets and missing TCP data, and __IP Fragmentation and Defragmentation__ to create and reassemble IPv4 and IPv6 fragments [[Learn more](https://pcapplusplus.github.io/docs/features#packet-reassembly)]
 - __Packet filtering__ that makes libpcap's BPF filters a lot more user-friendly [[Learn more](https://pcapplusplus.github.io/docs/features#packet-filtering)]
 
@@ -131,7 +132,7 @@ If you see any missing data please [contact us](#provide-feedback).
 
 ## Multi Platform Support
 
-PcapPlusPlus is currently supported on __Windows__, __Linux__ and __MacOS__. Please visit PcapPlusPlus web-site to see all of the [supported platforms](https://pcapplusplus.github.io/docs/install/platforms) and refer to the [Download](#download) section to start using PcapPlusPlus on your platform.
+PcapPlusPlus is currently supported on __Windows__, __Linux__, __MacOS__ and __FreeBSD__. Please visit PcapPlusPlus web-site to see all of the [supported platforms](https://pcapplusplus.github.io/docs/install/platforms) and refer to the [Download](#download) section to start using PcapPlusPlus on your platform.
 
 ## Supported Network Protocols
 

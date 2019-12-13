@@ -9,7 +9,7 @@
 #include <winsock2.h>
 #elif LINUX
 #include <in.h> //for using ntohl, ntohs, etc.
-#elif MAC_OS_X
+#elif MAC_OS_X || FREEBSD
 #include <arpa/inet.h> //for using ntohl, ntohs, etc.
 #endif
 
@@ -85,7 +85,7 @@ RadiusAttribute RadiusLayer::addAttrAt(const RadiusAttributeBuilder& attrBuilder
 	return RadiusAttribute(newAttrPtr);
 }
 
-std::string RadiusLayer::getAuthenticatorValue()
+std::string RadiusLayer::getAuthenticatorValue() const
 {
 	return byteArrayToHexString(getRadiusHeader()->authenticator, 16);
 }
@@ -134,7 +134,7 @@ std::string RadiusLayer::getRadiusMessageString(uint8_t radiusMessageCode)
 	}
 }
 
-size_t RadiusLayer::getHeaderLen()
+size_t RadiusLayer::getHeaderLen() const
 {
 	uint16_t len = ntohs(getRadiusHeader()->length);
 	if (len > m_DataLen)
@@ -148,7 +148,7 @@ void RadiusLayer::computeCalculateFields()
 	getRadiusHeader()->length = htons(m_DataLen);
 }
 
-std::string RadiusLayer::toString()
+std::string RadiusLayer::toString() const
 {
 	std::ostringstream str;
 	str << "RADIUS Layer, " <<
@@ -165,22 +165,22 @@ std::string RadiusLayer::toString()
 	return str.str();
 }
 
-RadiusAttribute RadiusLayer::getFirstAttribute()
+RadiusAttribute RadiusLayer::getFirstAttribute() const
 {
 	return m_AttributeReader.getFirstTLVRecord(getAttributesBasePtr(), getHeaderLen() - sizeof(radius_header));
 }
 
-RadiusAttribute RadiusLayer::getNextAttribute(RadiusAttribute& attr)
+RadiusAttribute RadiusLayer::getNextAttribute(RadiusAttribute& attr) const
 {
 	return m_AttributeReader.getNextTLVRecord(attr, getAttributesBasePtr(), getHeaderLen() - sizeof(radius_header));
 }
 
-RadiusAttribute RadiusLayer::getAttribute(uint8_t attributeType)
+RadiusAttribute RadiusLayer::getAttribute(uint8_t attributeType) const
 {
 	return m_AttributeReader.getTLVRecord(attributeType, getAttributesBasePtr(), getHeaderLen() - sizeof(radius_header));
 }
 
-size_t RadiusLayer::getAttributeCount()
+size_t RadiusLayer::getAttributeCount() const
 {
 	return m_AttributeReader.getTLVRecordCount(getAttributesBasePtr(), getHeaderLen() - sizeof(radius_header));
 }
@@ -244,11 +244,11 @@ bool RadiusLayer::removeAllAttributes()
 	return true;
 }
 
-bool RadiusLayer::isDataValid(const uint8_t *udpData, size_t udpDataLen)
+bool RadiusLayer::isDataValid(const uint8_t* udpData, size_t udpDataLen)
 {
 	if(udpData != NULL)
 	{
-		const radius_header *radHdr = reinterpret_cast<const radius_header *>(udpData);
+		const radius_header* radHdr = reinterpret_cast<const radius_header*>(udpData);
 		size_t radLen = ntohs(radHdr->length);
 		return radLen >= sizeof(radius_header) && radLen <= udpDataLen;
 	}

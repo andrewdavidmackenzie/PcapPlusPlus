@@ -8,7 +8,7 @@
 #include <winsock2.h>
 #elif LINUX
 #include <in.h> //for using ntohl, ntohs, etc.
-#elif MAC_OS_X
+#elif MAC_OS_X || FREEBSD
 #include <arpa/inet.h> //for using ntohl, ntohs, etc.
 #endif
 
@@ -39,7 +39,7 @@ void IgmpLayer::setGroupAddress(const IPv4Address& groupAddr)
 	hdr->groupAddress = groupAddr.toInt();
 }
 
-IgmpType IgmpLayer::getType()
+IgmpType IgmpLayer::getType() const
 {
 	uint8_t type = getIgmpHeader()->type;
 	if (type < (uint8_t)IgmpType_MembershipQuery ||
@@ -102,7 +102,7 @@ uint16_t IgmpLayer::calculateChecksum()
 	return compute_checksum(&buffer, 1);
 }
 
-size_t IgmpLayer::getHeaderSizeByVerAndType(ProtocolType igmpVer, IgmpType igmpType)
+size_t IgmpLayer::getHeaderSizeByVerAndType(ProtocolType igmpVer, IgmpType igmpType) const
 {
 	if (igmpVer == IGMPv1 || igmpVer == IGMPv2)
 		return sizeof(igmp_header);
@@ -118,7 +118,7 @@ size_t IgmpLayer::getHeaderSizeByVerAndType(ProtocolType igmpVer, IgmpType igmpT
 	return 0;
 }
 
-std::string IgmpLayer::toString()
+std::string IgmpLayer::toString() const
 {
 	std::string igmpVer = "";
 	switch (getProtocol())
@@ -255,12 +255,12 @@ IgmpV3QueryLayer::IgmpV3QueryLayer(const IPv4Address& multicastAddr, uint8_t max
 	getIgmpV3QueryHeader()->s_qrv = s_qrv;
 }
 
-uint16_t IgmpV3QueryLayer::getSourceAddressCount()
+uint16_t IgmpV3QueryLayer::getSourceAddressCount() const
 {
 	return ntohs(getIgmpV3QueryHeader()->numOfSources);
 }
 
-IPv4Address IgmpV3QueryLayer::getSourceAddressAtIndex(int index)
+IPv4Address IgmpV3QueryLayer::getSourceAddressAtIndex(int index) const
 {
 	uint16_t numOfSources = getSourceAddressCount();
 	if (index < 0 || index >= numOfSources)
@@ -275,7 +275,7 @@ IPv4Address IgmpV3QueryLayer::getSourceAddressAtIndex(int index)
 	return IPv4Address(*(uint32_t*)ptr);
 }
 
-size_t IgmpV3QueryLayer::getHeaderLen()
+size_t IgmpV3QueryLayer::getHeaderLen() const
 {
 	uint16_t numOfSources = getSourceAddressCount();
 
@@ -393,13 +393,13 @@ IgmpV3ReportLayer::IgmpV3ReportLayer() :
 {
 }
 
-uint16_t IgmpV3ReportLayer::getGroupRecordCount()
+uint16_t IgmpV3ReportLayer::getGroupRecordCount() const
 {
 	return ntohs(getReportHeader()->numOfGroupRecords);
 
 }
 
-igmpv3_group_record* IgmpV3ReportLayer::getFirstGroupRecord()
+igmpv3_group_record* IgmpV3ReportLayer::getFirstGroupRecord() const
 {
 	// check if there are group records at all
 	if (getHeaderLen() <= sizeof(igmpv3_report_header))
@@ -409,7 +409,7 @@ igmpv3_group_record* IgmpV3ReportLayer::getFirstGroupRecord()
 	return (igmpv3_group_record*)curGroupPtr;
 }
 
-igmpv3_group_record* IgmpV3ReportLayer::getNextGroupRecord(igmpv3_group_record* groupRecord)
+igmpv3_group_record* IgmpV3ReportLayer::getNextGroupRecord(igmpv3_group_record* groupRecord) const
 {
 	if (groupRecord == NULL)
 		return NULL;
@@ -421,11 +421,6 @@ igmpv3_group_record* IgmpV3ReportLayer::getNextGroupRecord(igmpv3_group_record* 
 	igmpv3_group_record* nextGroup = (igmpv3_group_record*)((uint8_t*)groupRecord + groupRecord->getRecordLen());
 
 	return nextGroup;
-}
-
-size_t IgmpV3ReportLayer::getHeaderLen()
-{
-	return m_DataLen;
 }
 
 void IgmpV3ReportLayer::computeCalculateFields()
@@ -568,28 +563,28 @@ bool IgmpV3ReportLayer::removeAllGroupRecords()
  * igmpv3_group_record
  *********************/
 
-IPv4Address igmpv3_group_record::getMulticastAddress()
+IPv4Address igmpv3_group_record::getMulticastAddress() const
 {
 	return IPv4Address(multicastAddress);
 }
 
-uint16_t igmpv3_group_record::getSourceAdressCount()
+uint16_t igmpv3_group_record::getSourceAdressCount() const
 {
 	return ntohs(numOfSources);
 }
 
-IPv4Address igmpv3_group_record::getSoruceAddressAtIndex(int index)
+IPv4Address igmpv3_group_record::getSoruceAddressAtIndex(int index) const
 {
 	uint16_t numOfRecords = getSourceAdressCount();
 	if (index < 0 || index >= numOfRecords)
 		return IPv4Address::Zero;
 
 	int offset = index * sizeof(uint32_t);
-	uint8_t* ptr = sourceAddresses + offset;
+	const uint8_t* ptr = sourceAddresses + offset;
 	return IPv4Address(*(uint32_t*)ptr);
 }
 
-size_t igmpv3_group_record::getRecordLen()
+size_t igmpv3_group_record::getRecordLen() const
 {
 	uint16_t numOfRecords = getSourceAdressCount();
 

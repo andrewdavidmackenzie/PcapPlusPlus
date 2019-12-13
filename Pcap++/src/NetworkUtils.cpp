@@ -16,6 +16,9 @@
 #include <errno.h>
 #elif MAC_OS_X
 #include <sys/errno.h>
+#elif FREEBSD
+#include <arpa/inet.h>
+#include <sys/errno.h>
 #endif
 #ifdef _MSC_VER
 #include "SystemUtils.h"
@@ -83,12 +86,12 @@ static void arpPacketRecieved(RawPacket* rawPacket, PcapLiveDevice* device, void
 	// signal the main thread the ARP reply was received
 	pthread_mutex_lock(data->mutex);
 	pthread_cond_signal(data->cond);
-    pthread_mutex_unlock(data->mutex);
+	pthread_mutex_unlock(data->mutex);
 }
 
 
 MacAddress NetworkUtils::getMacAddress(IPv4Address ipAddr, PcapLiveDevice* device, double& arpResponseTimeMS,
-		MacAddress sourceMac, IPv4Address sourceIP, int arpTimeout)
+		MacAddress sourceMac, IPv4Address sourceIP, int arpTimeout) const
 {
 	MacAddress result = MacAddress::Zero;
 
@@ -310,12 +313,12 @@ static void dnsResponseRecieved(RawPacket* rawPacket, PcapLiveDevice* device, vo
 	// signal the main thread the ARP reply was received
 	pthread_mutex_lock(data->mutex);
 	pthread_cond_signal(data->cond);
-    pthread_mutex_unlock(data->mutex);
+	pthread_mutex_unlock(data->mutex);
 }
 
 
 IPv4Address NetworkUtils::getIPv4Address(std::string hostname, PcapLiveDevice* device, double& dnsResponseTimeMS, uint32_t& dnsTTL,
-		int dnsTimeout, IPv4Address dnsServerIP, IPv4Address gatewayIP)
+		int dnsTimeout, IPv4Address dnsServerIP, IPv4Address gatewayIP) const
 {
 	IPv4Address result = IPv4Address::Zero;
 

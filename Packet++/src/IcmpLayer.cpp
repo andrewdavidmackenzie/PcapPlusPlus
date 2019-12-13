@@ -11,14 +11,14 @@
 #include <winsock2.h>
 #elif LINUX
 #include <in.h> //for using ntohl, ntohs, etc.
-#elif MAC_OS_X
+#elif MAC_OS_X || FREEBSD
 #include <arpa/inet.h> //for using ntohl, ntohs, etc.
 #endif
 
 namespace pcpp
 {
 
-icmp_router_address_structure* icmp_router_advertisement::getRouterAddress(int index)
+icmp_router_address_structure* icmp_router_advertisement::getRouterAddress(int index) const
 {
 	if (index < 0 || index >= header->advertisementCount)
 		return NULL;
@@ -46,7 +46,7 @@ IcmpLayer::IcmpLayer() : Layer()
 	m_Protocol = ICMP;
 }
 
-IcmpMessageType IcmpLayer::getMessageType()
+IcmpMessageType IcmpLayer::getMessageType() const
 {
 	uint8_t type = getIcmpHeader()->type;
 	if (type > 18)
@@ -55,7 +55,7 @@ IcmpMessageType IcmpLayer::getMessageType()
 	return (IcmpMessageType)type;
 }
 
-bool IcmpLayer::isMessageOfType(IcmpMessageType type)
+bool IcmpLayer::isMessageOfType(IcmpMessageType type) const
 {
 	return (getMessageType() == type);
 }
@@ -327,7 +327,7 @@ icmp_redirect* IcmpLayer::setRedirectData(uint8_t code, IPv4Address gatewayAddre
 	return header;
 }
 
-icmp_router_advertisement* IcmpLayer::getRouterAdvertisementData()
+icmp_router_advertisement* IcmpLayer::getRouterAdvertisementData() const
 {
 	if (!isMessageOfType(ICMP_ROUTER_ADV))
 		return NULL;
@@ -570,29 +570,26 @@ icmp_info_reply* IcmpLayer::setInfoReplyData(uint16_t id, uint16_t sequence)
 
 void IcmpLayer::parseNextLayer()
 {
-	IcmpMessageType type = getMessageType();
-	size_t headerLen = 0;
+	size_t headerLen = getHeaderLen();
 
-	switch (type)
+	switch (getMessageType())
 	{
 	case ICMP_DEST_UNREACHABLE:
 	case ICMP_SOURCE_QUENCH:
 	case ICMP_TIME_EXCEEDED:
 	case ICMP_REDIRECT:
 	case ICMP_PARAM_PROBLEM:
-		headerLen = getHeaderLen();
 		if (m_DataLen - headerLen >= sizeof(iphdr))
 			m_NextLayer = new IPv4Layer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet, false);
 		return;
 	default:
-		headerLen = getHeaderLen();
 		if (m_DataLen > headerLen)
 			m_NextLayer = new PayloadLayer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
 		return;
 	}
 }
 
-size_t IcmpLayer::getHeaderLen()
+size_t IcmpLayer::getHeaderLen() const
 {
 	IcmpMessageType type = getMessageType();
 	size_t routerAdvSize = 0;
@@ -650,7 +647,7 @@ void IcmpLayer::computeCalculateFields()
 	getIcmpHeader()->checksum = htons(checksum);
 }
 
-std::string IcmpLayer::toString()
+std::string IcmpLayer::toString() const
 {
 	std::string messageTypeAsString;
 	IcmpMessageType type = getMessageType();

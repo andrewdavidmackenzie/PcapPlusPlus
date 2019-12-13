@@ -14,7 +14,7 @@
 #include <winsock2.h>
 #elif LINUX
 #include <in.h> //for using ntohl, ntohs, etc.
-#elif MAC_OS_X
+#elif MAC_OS_X || FREEBSD
 #include <arpa/inet.h> //for using ntohl, ntohs, etc.
 #endif
 
@@ -206,29 +206,34 @@ void GreLayer::parseNextLayer()
 		return;
 
 	gre_basic_header* header = (gre_basic_header*)m_Data;
+	uint8_t* payload = m_Data + headerLen;
+	size_t payloadLen = m_DataLen - headerLen;
+
 	switch (ntohs(header->protocol))
 	{
 	case PCPP_ETHERTYPE_IP:
-		m_NextLayer = new IPv4Layer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = IPv4Layer::isDataValid(payload, payloadLen)
+			? static_cast<Layer*>(new IPv4Layer(payload, payloadLen, this, m_Packet))
+			: static_cast<Layer*>(new PayloadLayer(payload, payloadLen, this, m_Packet));
 		break;
 	case PCPP_ETHERTYPE_IPV6:
-		m_NextLayer = new IPv6Layer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = new IPv6Layer(payload, payloadLen, this, m_Packet);
 		break;
 	case PCPP_ETHERTYPE_VLAN:
-		m_NextLayer = new VlanLayer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = new VlanLayer(payload, payloadLen, this, m_Packet);
 		break;
 	case PCPP_ETHERTYPE_MPLS:
-		m_NextLayer = new MplsLayer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = new MplsLayer(payload, payloadLen, this, m_Packet);
 		break;
 	case PCPP_ETHERTYPE_PPP:
-		m_NextLayer = new PPP_PPTPLayer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = new PPP_PPTPLayer(payload, payloadLen, this, m_Packet);
 		break;
 	default:
-		m_NextLayer = new PayloadLayer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = new PayloadLayer(payload, payloadLen, this, m_Packet);
 	}
 }
 
-size_t GreLayer::getHeaderLen()
+size_t GreLayer::getHeaderLen() const
 {
 	size_t result = sizeof(gre_basic_header);
 
@@ -255,9 +260,10 @@ size_t GreLayer::getHeaderLen()
 
 GREv0Layer::GREv0Layer()
 {
-	m_DataLen = sizeof(gre_basic_header);
-	m_Data = new uint8_t[m_DataLen];
-	memset(m_Data, 0, m_DataLen);
+	const size_t headerLen = sizeof(gre_basic_header);
+	m_DataLen = headerLen;
+	m_Data = new uint8_t[headerLen];
+	memset(m_Data, 0, headerLen);
 	m_Protocol = GREv0;
 }
 
@@ -341,7 +347,7 @@ bool GREv0Layer::unsetChecksum()
 	return true;
 }
 
-bool GREv0Layer::getOffset(uint16_t& offset)
+bool GREv0Layer::getOffset(uint16_t& offset) const
 {
 	if (getGreHeader()->routingBit == 0)
 		return false;
@@ -354,7 +360,7 @@ bool GREv0Layer::getOffset(uint16_t& offset)
 	return true;
 }
 
-bool GREv0Layer::getKey(uint32_t& key)
+bool GREv0Layer::getKey(uint32_t& key) const
 {
 	if (getGreHeader()->keyBit == 0)
 		return false;
@@ -436,7 +442,7 @@ void GREv0Layer::computeCalculateFields()
 	setChecksum(checksum);
 }
 
-std::string GREv0Layer::toString()
+std::string GREv0Layer::toString() const
 {
 	return "GRE Layer, version 0";
 }
@@ -448,9 +454,10 @@ std::string GREv0Layer::toString()
 
 GREv1Layer::GREv1Layer(uint16_t callID)
 {
-	m_DataLen = sizeof(gre1_header);
-	m_Data = new uint8_t[m_DataLen];
-	memset(m_Data, 0, m_DataLen);
+	const size_t headerLen = sizeof(gre1_header);
+	m_DataLen = headerLen;
+	m_Data = new uint8_t[headerLen];
+	memset(m_Data, 0, headerLen);
 	m_Protocol = GREv1;
 
 	gre1_header* header = getGreHeader();
@@ -459,7 +466,7 @@ GREv1Layer::GREv1Layer(uint16_t callID)
 	header->callID = htons(callID);
 }
 
-bool GREv1Layer::getAcknowledgmentNum(uint32_t& ackNum)
+bool GREv1Layer::getAcknowledgmentNum(uint32_t& ackNum) const
 {
 	if (getGreHeader()->ackSequenceNumBit == 0)
 		return false;
@@ -527,7 +534,7 @@ void GREv1Layer::computeCalculateFields()
 	getGreHeader()->payloadLength = htons(m_DataLen - getHeaderLen());
 }
 
-std::string GREv1Layer::toString()
+std::string GREv1Layer::toString() const
 {
 	return "GRE Layer, version 1";
 }
@@ -540,9 +547,10 @@ std::string GREv1Layer::toString()
 
 PPP_PPTPLayer::PPP_PPTPLayer(uint8_t address, uint8_t control)
 {
-	m_DataLen = sizeof(ppp_pptp_header);
-	m_Data = new uint8_t[m_DataLen];
-	memset(m_Data, 0, m_DataLen);
+	const size_t headerLen = sizeof(ppp_pptp_header);
+	m_DataLen = headerLen;
+	m_Data = new uint8_t[headerLen];
+	memset(m_Data, 0, headerLen);
 	m_Protocol = PPP_PPTP;
 
 	ppp_pptp_header* header = getPPP_PPTPHeader();
@@ -557,16 +565,21 @@ void PPP_PPTPLayer::parseNextLayer()
 	if (m_DataLen <= headerLen)
 		return;
 
+	uint8_t* payload = m_Data + headerLen;
+	size_t payloadLen = m_DataLen - headerLen;
+
 	switch (ntohs(getPPP_PPTPHeader()->protocol))
 	{
 	case PCPP_PPP_IP:
-		m_NextLayer = new IPv4Layer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = IPv4Layer::isDataValid(payload, payloadLen)
+			? static_cast<Layer*>(new IPv4Layer(payload, payloadLen, this, m_Packet))
+			: static_cast<Layer*>(new PayloadLayer(payload, payloadLen, this, m_Packet));
 		break;
 	case PCPP_PPP_IPV6:
-		m_NextLayer = new IPv6Layer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = new IPv6Layer(payload, payloadLen, this, m_Packet);
 		break;
 	default:
-		m_NextLayer = new PayloadLayer(m_Data + headerLen, m_DataLen - headerLen, this, m_Packet);
+		m_NextLayer = new PayloadLayer(payload, payloadLen, this, m_Packet);
 		break;
 	}
 }
