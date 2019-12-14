@@ -13,8 +13,11 @@ mkdir -p $INSTALL_DIR/include/pcapplusplus
 cp header/* $INSTALL_DIR/include/pcapplusplus
 
 # copy examples
-mkdir -p $INSTALL_DIR/bin
-cp examples/* $INSTALL_DIR/bin
+if [ -d "examples/" ]
+then
+  mkdir -p $INSTALL_DIR/bin
+  cp examples/* $INSTALL_DIR/bin
+fi
 
 # create template makefile 
 cp mk/PcapPlusPlus.mk PcapPlusPlus.mk
