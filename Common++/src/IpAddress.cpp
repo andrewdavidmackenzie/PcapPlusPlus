@@ -214,6 +214,16 @@ IPv6Address::IPv6Address(std::string addressAsString)
 	init((char*)addressAsString.c_str());
 }
 
+IPv6Address::IPv6Address(in6_addr* inAddr)
+{
+  m_pInAddr = new in6_addr();
+  memcpy(m_pInAddr, inAddr, sizeof(in6_addr));
+  if (inet_ntop(AF_INET6, m_pInAddr, m_AddressAsString, MAX_ADDR_STRING_LEN) == 0)
+    m_IsValid = false;
+  else
+    m_IsValid = true;
+}
+
 void IPv6Address::copyTo(uint8_t** arr, size_t& length) const
 {
 	const size_t addrLen = sizeof(in6_addr);

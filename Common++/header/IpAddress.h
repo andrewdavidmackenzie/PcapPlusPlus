@@ -255,6 +255,12 @@ namespace pcpp
 		 */
 		IPv6Address(std::string addressAsString);
 
+                /**
+                 * A constructor that creates an instance of the class out of in6_addr struct pointer
+                 * @param[in] inAddr The in6_addr struct representation of the address
+                 */
+                IPv6Address(in6_addr* inAddr);
+
 		/**
 		 * A copy constructor for this class
 		 */
