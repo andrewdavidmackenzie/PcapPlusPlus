@@ -241,16 +241,29 @@ bool IPv6Address::matchSubnet(const IPv6Address& subnet, const IPv6Address& subn
 {
 
         struct in6_addr thisAfterMask = *m_pInAddr;
+#ifdef LINUX
+        thisAfterMask.s6_addr32[0] &= subnetMask.m_pInAddr->s6_addr32[0];
+        thisAfterMask.s6_addr32[1] &= subnetMask.m_pInAddr->s6_addr32[1];
+        thisAfterMask.s6_addr32[2] &= subnetMask.m_pInAddr->s6_addr32[2];
+        thisAfterMask.s6_addr32[3] &= subnetMask.m_pInAddr->s6_addr32[3];
+#else
         thisAfterMask.__u6_addr.__u6_addr32[0] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[0];
         thisAfterMask.__u6_addr.__u6_addr32[1] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[1];
         thisAfterMask.__u6_addr.__u6_addr32[2] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[2];
         thisAfterMask.__u6_addr.__u6_addr32[3] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[3];
+#endif
         struct in6_addr subnetAfterMask = *subnet.m_pInAddr;
+#ifdef LINUX
+        subnetAfterMask.s6_addr32[0] &= subnetMask.m_pInAddr->s6_addr32[0];
+        subnetAfterMask.s6_addr32[1] &= subnetMask.m_pInAddr->s6_addr32[1];
+        subnetAfterMask.s6_addr32[2] &= subnetMask.m_pInAddr->s6_addr32[2];
+        subnetAfterMask.s6_addr32[3] &= subnetMask.m_pInAddr->s6_addr32[3];
+#else
         subnetAfterMask.__u6_addr.__u6_addr32[0] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[0];
         subnetAfterMask.__u6_addr.__u6_addr32[1] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[1];
         subnetAfterMask.__u6_addr.__u6_addr32[2] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[2];
         subnetAfterMask.__u6_addr.__u6_addr32[3] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[3];
-
+#endif
         return memcmp(&thisAfterMask, &subnetAfterMask, sizeof(in6_addr)) == 0;
 
 }
