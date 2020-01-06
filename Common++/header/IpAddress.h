@@ -293,6 +293,14 @@ namespace pcpp
 		 */
 		void copyTo(uint8_t* arr) const;
 
+                /**
+                 * Checks whether the address matches a subnet.
+                 * @param[in] subnet The subnet to be verified.
+                 * @param[in] subnetMask The subnet mask to compare the address with the subnet
+                 *
+                 */
+                bool matchSubnet(const IPv6Address& subnet, const IPv6Address& subnetMask) const;
+
 		/**
 		 * Overload of the comparison operator
 		 * @return true if 2 addresses are equal. False otherwise

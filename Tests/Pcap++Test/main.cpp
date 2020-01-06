@@ -701,6 +701,14 @@ PTF_TEST_CASE(TestIPAddress)
 	PTF_ASSERT(badIp6Address.isValid() == false, "Non-valid IPv6 address identified as valid");
 	IPv6Address anotherBadIp6Address = badIp6Address;
 	PTF_ASSERT(anotherBadIp6Address.isValid() == false, "Non-valid IPv6 address copied by copy c'tor identified as valid");
+
+        IPv6Address ipv6Addr("2607:f0d0:1002:51::4"), subnet61("2607:f0d0:1002:51::"), subnet62("2607:f0d0:2002:51::"), mask6("ffff:ffff:ffff:ffff::");
+        PTF_ASSERT(ipv6Addr.isValid() == true, "Valid ipv6Addr identified as non-valid");
+        PTF_ASSERT(subnet61.isValid() == true, "Valid subnet1 identified as non-valid");
+        PTF_ASSERT(subnet62.isValid() == true, "Valid subnet2 identified as non-valid");
+        PTF_ASSERT(mask6.isValid() == true, "Valid mask identified as non-valid");
+        PTF_ASSERT(ipv6Addr.matchSubnet(subnet61, mask6) == true, "Incorrect result: ipv6Addr address does not belong to subnet61");
+        PTF_ASSERT(ipv6Addr.matchSubnet(subnet62, mask6) == false, "Incorrect result: ipv6Addr address belongs to subnet62");
 }
 
 PTF_TEST_CASE(TestMacAddress)

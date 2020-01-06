@@ -237,6 +237,24 @@ void IPv6Address::copyTo(uint8_t* arr) const
 	memcpy(arr, m_pInAddr, sizeof(in6_addr));
 }
 
+bool IPv6Address::matchSubnet(const IPv6Address& subnet, const IPv6Address& subnetMask) const
+{
+
+        struct in6_addr thisAfterMask = *m_pInAddr;
+        thisAfterMask.__u6_addr.__u6_addr32[0] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[0];
+        thisAfterMask.__u6_addr.__u6_addr32[1] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[1];
+        thisAfterMask.__u6_addr.__u6_addr32[2] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[2];
+        thisAfterMask.__u6_addr.__u6_addr32[3] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[3];
+        struct in6_addr subnetAfterMask = *subnet.m_pInAddr;
+        subnetAfterMask.__u6_addr.__u6_addr32[0] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[0];
+        subnetAfterMask.__u6_addr.__u6_addr32[1] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[1];
+        subnetAfterMask.__u6_addr.__u6_addr32[2] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[2];
+        subnetAfterMask.__u6_addr.__u6_addr32[3] &= subnetMask.m_pInAddr->__u6_addr.__u6_addr32[3];
+
+        return memcmp(&thisAfterMask, &subnetAfterMask, sizeof(in6_addr)) == 0;
+
+}
+
 bool IPv6Address::operator==(const IPv6Address& other) const
 {
 	return (memcmp(m_pInAddr, other.m_pInAddr, sizeof(in6_addr)) == 0);
