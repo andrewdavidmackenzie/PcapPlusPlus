@@ -84,7 +84,7 @@ namespace pcpp
 		/**
 		 * @return The name of this record
 		 */
-		std::string getName() const { return m_DecodedName; }
+		const std::string& getName() const { return m_DecodedName; }
 
 		/**
 		 * @return The record name's offset in the packet
