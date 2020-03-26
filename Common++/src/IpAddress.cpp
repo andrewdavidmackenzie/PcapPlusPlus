@@ -216,7 +216,7 @@ IPv6Address::IPv6Address(std::string addressAsString)
 
 IPv6Address::IPv6Address(in6_addr* inAddr)
 {
-  m_pInAddr = new in6_addr();
+  m_pInAddr = (in6_addr*)new uint8_t[sizeof(in6_addr)];
   memcpy(m_pInAddr, inAddr, sizeof(in6_addr));
   if (inet_ntop(AF_INET6, m_pInAddr, m_AddressAsString, MAX_ADDR_STRING_LEN) == 0)
     m_IsValid = false;
