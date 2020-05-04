@@ -128,7 +128,12 @@ namespace pcpp
 
 		virtual ~DnsLayer();
 
-		/**
+                /**
+                 * Parse resource records in the DNS packet (by default these are not parsed automatically)
+                 */
+                void parseResources();
+
+                /**
 		 * Get a pointer to the DNS header (as opposed to the DNS data which is the queries, answers, etc. Data can be retrieved through the
 		 * other methods of this layer. Notice the return value points directly to the data, so every change will change the actual packet data
 		 * @return A pointer to the @ref dnshdr
@@ -448,8 +453,6 @@ namespace pcpp
 		bool shortenLayer(int offsetInLayer, size_t numOfBytesToShorten, IDnsResource* resource);
 
 		IDnsResource* getResourceByName(IDnsResource* startFrom, size_t resourceCount, const std::string& name, bool exactMatch) const;
-
-		void parseResources();
 
 		DnsResource* addResource(DnsResourceType resType, const std::string& name, DnsType dnsType, DnsClass dnsClass,
 				uint32_t ttl, IDnsResourceData* data);

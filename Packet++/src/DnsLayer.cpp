@@ -28,8 +28,6 @@ DnsLayer::DnsLayer(uint8_t* data, size_t dataLen, Layer* prevLayer, Packet* pack
 	m_FirstAnswer = NULL;
 	m_FirstAuthority = NULL;
 	m_FirstAdditional = NULL;
-
-	parseResources();
 }
 
 DnsLayer::DnsLayer()
@@ -59,7 +57,6 @@ DnsLayer::DnsLayer(const DnsLayer& other) : Layer(other)
 	m_FirstAuthority = NULL;
 	m_FirstAdditional = NULL;
 
-	parseResources();
 }
 
 DnsLayer& DnsLayer::operator=(const DnsLayer& other)
@@ -80,8 +77,6 @@ DnsLayer& DnsLayer::operator=(const DnsLayer& other)
 	m_FirstAnswer = NULL;
 	m_FirstAuthority = NULL;
 	m_FirstAdditional = NULL;
-
-	parseResources();
 
 	return (*this);
 }

@@ -2604,6 +2604,7 @@ PTF_TEST_CASE(DnsLayerParsingTest)
 	Packet dnsPacket(&rawPacket);
 
 	DnsLayer* dnsLayer = dnsPacket.getLayerOfType<DnsLayer>();
+        dnsLayer->parseResources();
 
 	PTF_ASSERT(dnsLayer != NULL, "Couldn't find DnsLayer");
 	PTF_ASSERT(dnsLayer->getQueryCount() == 2, "Number of DNS queries != 2");
@@ -2682,6 +2683,7 @@ PTF_TEST_CASE(DnsLayerParsingTest)
 	Packet dnsPacket2(&rawPacket2);
 
 	dnsLayer = dnsPacket2.getLayerOfType<DnsLayer>();
+        dnsLayer->parseResources();
 	PTF_ASSERT(dnsLayer != NULL, "Couldn't find DnsLayer");
 	PTF_ASSERT(ntohs(dnsLayer->getDnsHeader()->transactionID) == 0x2d6d, "DNS transaction ID != 0x2d6d");
 	PTF_ASSERT(dnsLayer->getDnsHeader()->queryOrResponse == 1, "Packet isn't a response");
@@ -2740,6 +2742,7 @@ PTF_TEST_CASE(DnsLayerParsingTest)
 	Packet dnsPacket3(&rawPacket3);
 
 	dnsLayer = dnsPacket3.getLayerOfType<DnsLayer>();
+        dnsLayer->parseResources();
 	PTF_ASSERT(dnsLayer != NULL, "Couldn't find DnsLayer");
 	queryByName = dnsLayer->getQuery(string("Yaels-iPhone.loca"), false);
 	PTF_ASSERT(queryByName != NULL, "Query by name returned NULL for Dns2.dat");
@@ -2757,6 +2760,7 @@ PTF_TEST_CASE(DnsLayerParsingTest)
 
 	Packet dnsPacket4(&rawPacket4);
 	dnsLayer = dnsPacket4.getLayerOfType<DnsLayer>();
+        dnsLayer->parseResources();
 	PTF_ASSERT(dnsLayer != NULL, "Couldn't find DnsLayer");
 
 	curAnswer = dnsLayer->getFirstAnswer();
