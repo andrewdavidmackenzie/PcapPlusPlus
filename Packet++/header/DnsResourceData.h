@@ -381,7 +381,11 @@ namespace pcpp
 		 */
 		bool operator==(const GenericDnsResourceData& other) const;
 
-		// implement abstract methods
+                const uint8_t* getData() const { return m_Data; }
+
+                size_t getDataLen() const { return m_DataLen; }
+
+                // implement abstract methods
 
 		std::string toString() const;
 		bool toByteArr(uint8_t* arr, size_t& arrLength, IDnsResource* dnsResource) const;
